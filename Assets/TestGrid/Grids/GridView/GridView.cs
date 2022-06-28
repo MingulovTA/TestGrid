@@ -5,76 +5,75 @@ using TestGrid.Core.Animations;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GridView : MonoBehaviour
+namespace TestGrid.Grids.GridView
 {
-    [SerializeField] private Text _textPrefab;
-    [SerializeField] private GridLayoutGroup _gridLayoutGroup;
-    [SerializeField] private RectTransform _rectTransform;
-    
-    private List<Text> _cells = new List<Text>();
-    private Grid _grid;
-    public void Show(Grid grid)
+    public class GridView : MonoBehaviour
     {
-        _grid = grid;
-        foreach (var cell in _cells)
-            Destroy(cell.gameObject);
-        _cells.Clear();
+        [SerializeField] private Text _textPrefab;
+        [SerializeField] private GridLayoutGroup _gridLayoutGroup;
+        [SerializeField] private RectTransform _rectTransform;
+    
+        private List<Text> _cells = new List<Text>();
+        public void Show(Grid grid)
+        {
+            foreach (var cell in _cells)
+                Destroy(cell.gameObject);
+            _cells.Clear();
 
 
-        _gridLayoutGroup.cellSize = new Vector2(
-            _rectTransform.sizeDelta.x / grid.Width,
-            _rectTransform.sizeDelta.y / grid.Height);
+            var sizeDelta = _rectTransform.sizeDelta;
+            _gridLayoutGroup.cellSize = new Vector2(
+                sizeDelta.x / grid.Width,
+                sizeDelta.y / grid.Height);
         
-        for (int y = 0; y < grid.Height; y++)
-        for (int x = 0; x < grid.Width; x++)
-        {
-            Text cell = Instantiate(_textPrefab, transform);
-            cell.text = grid.GetChar(x, y).ToString();
-            _cells.Add(cell);
-        }
-        _gridLayoutGroup.enabled = true;
-    }
-
-    public void ShowAnimation(GridAnimation gridAnimation, Action onComplete)
-    {
-        _gridLayoutGroup.enabled = false;
-        
-        List<Tween> targetPositions = new List<Tween>();
-
-        int counter = 0;
-        foreach (var node in gridAnimation.EndKeyFrame)
-        {
-            Vector2 newPosition = _cells[node].transform.position;
-            float distance = Vector3.Distance(newPosition, _cells[counter].transform.position);
-            Tween tween = new Tween(newPosition,distance/gridAnimation.AnimationTime);
-            targetPositions.Add(tween);
-            counter++;
-        }
-
-        StartCoroutine(AnimationYield(gridAnimation.AnimationTime,targetPositions,onComplete));
-    }
-    
-    
-
-    private float _animationTime;
-    private IEnumerator AnimationYield(float time, List<Tween> targetPositions, Action onComplete)
-    {
-        yield return null;
-        _animationTime = 0;
-        while (_animationTime<time)
-        {
-            for (var i = 0; i < _cells.Count; i++)
+            for (int y = 0; y < grid.Height; y++)
+            for (int x = 0; x < grid.Width; x++)
             {
-                _cells[i].transform.position = Vector3.MoveTowards(_cells[i].transform.position,
-                    targetPositions[i].TargetPosition, targetPositions[i].Speed*Time.deltaTime);
+                Text cell = Instantiate(_textPrefab, transform);
+                cell.text = grid.GetChar(x, y).ToString();
+                _cells.Add(cell);
+            }
+            _gridLayoutGroup.enabled = true;
+        }
+
+        public void ShowAnimation(GridAnimation gridAnimation, Action onComplete)
+        {
+            _gridLayoutGroup.enabled = false;
+        
+            List<Tween> targetPositions = new List<Tween>();
+
+            int counter = 0;
+            foreach (var node in gridAnimation.EndKeyFrame)
+            {
+                Vector2 newPosition = _cells[node].transform.position;
+                float distance = Vector3.Distance(newPosition, _cells[counter].transform.position);
+                Tween tween = new Tween(newPosition,distance/gridAnimation.AnimationTime);
+                targetPositions.Add(tween);
+                counter++;
             }
 
-            _animationTime += Time.deltaTime;
-            yield return null;
+            StartCoroutine(AnimationYield(gridAnimation.AnimationTime,targetPositions,onComplete));
         }
-        onComplete?.Invoke();
-    }
-
-
     
+    
+
+        private float _animationTime;
+        private IEnumerator AnimationYield(float time, List<Tween> tweens, Action onComplete)
+        {
+            yield return null;
+            _animationTime = 0;
+            while (_animationTime<time)
+            {
+                for (var i = 0; i < _cells.Count; i++)
+                {
+                    _cells[i].transform.position = Vector3.MoveTowards(_cells[i].transform.position,
+                        tweens[i].TargetPosition, tweens[i].Speed*Time.deltaTime);
+                }
+
+                _animationTime += Time.deltaTime;
+                yield return null;
+            }
+            onComplete?.Invoke();
+        }
+    }
 }
