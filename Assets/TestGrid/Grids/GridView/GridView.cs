@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TestGrid.Core.Animations;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -74,19 +75,6 @@ public class GridView : MonoBehaviour
         onComplete?.Invoke();
     }
 
-    public struct Tween
-    {
-        private Vector3 _targetPosition;
-        private float _speed;
-        
-        public float Speed => _speed;
-        public Vector3 TargetPosition => _targetPosition;
-        public Tween(Vector3 targetPosition, float speed)
-        {
-            _targetPosition = targetPosition;
-            _speed = speed;
-        }
 
-    }
     
 }
