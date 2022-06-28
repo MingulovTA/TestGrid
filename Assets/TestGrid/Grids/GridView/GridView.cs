@@ -16,6 +16,7 @@ namespace TestGrid.Grids.GridView
         private List<Text> _cells = new List<Text>();
         public void Show(Grid grid)
         {
+            //Yeah, I know. Pool should be here...(
             foreach (var cell in _cells)
                 Destroy(cell.gameObject);
             _cells.Clear();
