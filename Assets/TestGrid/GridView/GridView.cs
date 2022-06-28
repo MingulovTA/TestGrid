@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,27 +38,34 @@ public class GridView : MonoBehaviour
     {
         _gridLayoutGroup.enabled = false;
         
-        List<Vector3> targetPositions = new List<Vector3>();
-        
+        List<Tween> targetPositions = new List<Tween>();
+
+        int counter = 0;
         foreach (var node in gridAnimation.EndKeyFrame)
         {
             Vector2 newPosition = _cells[node].transform.position;
-            targetPositions.Add(newPosition);
+            float distance = Vector3.Distance(newPosition, _cells[counter].transform.position);
+            Tween tween = new Tween(newPosition,distance/gridAnimation.AnimationTime);
+            targetPositions.Add(tween);
+            counter++;
         }
 
-        StartCoroutine(AnimationYield(gridAnimation,targetPositions,onComplete));
+        StartCoroutine(AnimationYield(gridAnimation.AnimationTime,targetPositions,onComplete));
     }
+    
+    
 
     private float _animationTime;
-    private IEnumerator AnimationYield(GridAnimation gridAnimation, List<Vector3> targetPositions, Action onComplete)
+    private IEnumerator AnimationYield(float time, List<Tween> targetPositions, Action onComplete)
     {
+        yield return null;
         _animationTime = 0;
-        while (_animationTime<gridAnimation.AnimationTime)
+        while (_animationTime<time)
         {
-            foreach (var cell in _cells)
+            for (var i = 0; i < _cells.Count; i++)
             {
-                cell.transform.position = Vector3.MoveTowards(cell.transform.position,
-                    targetPositions[_cells.IndexOf(cell)], Time.deltaTime*1000);
+                _cells[i].transform.position = Vector3.MoveTowards(_cells[i].transform.position,
+                    targetPositions[i].TargetPosition, targetPositions[i].Speed*Time.deltaTime);
             }
 
             _animationTime += Time.deltaTime;
@@ -67,4 +73,20 @@ public class GridView : MonoBehaviour
         }
         onComplete?.Invoke();
     }
+
+    public struct Tween
+    {
+        private Vector3 _targetPosition;
+        private float _speed;
+        
+        public float Speed => _speed;
+        public Vector3 TargetPosition => _targetPosition;
+        public Tween(Vector3 targetPosition, float speed)
+        {
+            _targetPosition = targetPosition;
+            _speed = speed;
+        }
+
+    }
+    
 }
