@@ -2,6 +2,7 @@ using System;
 using TestGrid.GridOperations;
 using TestGrid.Grids;
 using TestGrid.Grids.GridView;
+using TestGrid.Popups;
 using UnityEngine;
 using UnityEngine.UI;
 using Grid = TestGrid.Grids.Grid;
@@ -14,13 +15,20 @@ namespace TestGrid.Core
         [SerializeField] private InputField _ifHeight;
         [SerializeField] private GridView _gridView;
         
-        
         private Grid _grid;
         private bool _animationIsPlaying;
+
+        private PopupManager _popupManager;
+        private void Start()
+        {
+            _popupManager = ProjectContext.I.PopupManager;
+        }
+        
         public void GenerateNewGrid() //Reflection invokation
         {
             if (_animationIsPlaying)
             {
+                _popupManager.ShowMessagePopup("Невозможно сгенерировать новую сетку. \nВыполняется анимация");
                 return;
             }
             int width = Convert.ToInt32(_ifWidth.text);
@@ -35,6 +43,7 @@ namespace TestGrid.Core
         {
             if (_animationIsPlaying)
             {
+                _popupManager.ShowMessagePopup("Невозможно проиграть следующую анимацию, пока проигрывается предыдущая.");
                 return;
             }
             _animationIsPlaying = true;
